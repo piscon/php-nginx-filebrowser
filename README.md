@@ -8,7 +8,9 @@
 
 ## 直接拉取已经构建的 Docker 镜像
 
-Docker Hub: https://hub.docker.com/r/piscon/php-nginx-filebrowser
+> Docker Hub 镜像：`piscon/php-nginx-filebrowser`  
+> https://hub.docker.com/r/piscon/php-nginx-filebrowser
+
 
 ## 自己构建
 
