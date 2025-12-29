@@ -1,8 +1,16 @@
+
+
 # php-nginx-filebrowser
 
 基于 `webdevops/php-nginx:8.4` 的 PHP + Nginx 镜像，集成 FileBrowser 文件管理器，并通过 supervisord 统一管理。
 
 ## 快速开始
+
+# php-nginx-filebrowser
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/piscon/php-nginx-filebrowser.svg)](https://hub.docker.com/r/piscon/php-nginx-filebrowser)
+
+## 自己构建
 
 ```bash
 # 在项目根目录构建镜像（包含 Dockerfile 和 supervisord-filebrowser.conf）
