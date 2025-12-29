@@ -3,6 +3,10 @@ name: Build and push Docker image
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "Dockerfile"
+      - "supervisord-filebrowser.conf"
+      - ".github/workflows/docker-image.yml"
   workflow_dispatch:
 
 jobs:
