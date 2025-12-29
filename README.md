@@ -6,9 +6,9 @@
 
 ## 快速开始
 
-# php-nginx-filebrowser
+## 直接拉取已经构建的 Docker 镜像
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/piscon/php-nginx-filebrowser.svg)](https://hub.docker.com/r/piscon/php-nginx-filebrowser)
+Docker Hub: https://hub.docker.com/r/piscon/php-nginx-filebrowser
 
 ## 自己构建
 
