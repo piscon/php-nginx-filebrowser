@@ -6,10 +6,60 @@
 
 ## 快速开始
 
-> Docker Hub 镜像：`piscon/php-nginx-filebrowser`  
-> https://hub.docker.com/r/piscon/php-nginx-filebrowser
+各大云容器平台拉取已构建的镜像
 
-## 自己构建
+> Docker Hub 镜像：`piscon/php-nginx-filebrowser`  
+> https://hub.docker.com/r/piscon/php-nginx-filebrowser  
+
+### 部署说明
+
+以常见的容器平台（如自建 Docker、各云厂商容器服务）为例，只需要拉取镜像并挂载要管理的目录到 `/app` 即可。
+
+**Docker 命令行示例：**
+
+```bash
+docker run -d \
+  --name php-nginx-filebrowser \
+  -p 80:80 \
+  -p 8080:8080 \
+  -v /path/to/app:/app \
+  piscon/php-nginx-filebrowser:latest  
+```
+**docker-compose.yml 示例：**
+```yaml
+services:
+  php-nginx-filebrowser:
+    image: piscon/php-nginx-filebrowser:latest
+    container_name: php-nginx-filebrowser
+    ports:
+      - "8080:8080"
+    volumes:
+      # 要管理的目录，挂载到容器内 /app
+      - /path/to/app:/app
+      # （可选）持久化 FileBrowser 数据库
+      # - /path/to/db:/srv/filebrowser
+    environment:
+      # 如需自定义 PHP/Nginx 行为，可在这里追加环境变量
+      # WEB_DOCUMENT_ROOT 默认为 /app，通常无需修改
+      # WEB_DOCUMENT_INDEX 默认为 index.php
+      # 例如：WEB_DOCUMENT_ROOT=/app/public
+      # - WEB_DOCUMENT_ROOT=/app
+      # - WEB_DOCUMENT_INDEX=index.php
+    restart: unless-stopped
+
+```
+
+> 本镜像只扩展了 FileBrowser，其余 PHP 与 Nginx 行为与 `webdevops/php-nginx` 保持一致，可通过环境变量进行配置。
+- `webdevops/php-nginx` 文档：  
+  https://dockerfile.readthedocs.io/en/latest/content/DockerImages/dockerfiles/php-nginx.html
+
+## 访问方式
+
+- 通过映射端口，将容器的 `80`，`8080` 端口暴露出去。  
+- 在浏览器中访问 `http(s)://<你的域名或 IP>:<映射端口>`，即可打开 FileBrowser 界面并使用 `admin` 账户登录（初次密码从容器日志中获取）。
+-  Nginx 默认监听  `80`  `443`
+
+## 本地构建测试
 
 ```bash
 # 在项目根目录构建镜像（包含 Dockerfile 和 supervisord-filebrowser.conf）
@@ -131,7 +181,7 @@ stderr_logfile_maxbytes=0
 
 如果需要进一步修改 PHP、Nginx 的配置（如上传大小、额外 vhost、PHP-FPM 参数等），请参考 `webdevops/php-nginx` 官方文档中的环境变量和配置挂载说明，不建议在本镜像中直接修改基础文件。
 
-## 其余参考
+## 参考
 
 - `webdevops/php-nginx` 文档：  
   https://dockerfile.readthedocs.io/en/latest/content/DockerImages/dockerfiles/php-nginx.html
