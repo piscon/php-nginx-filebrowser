@@ -56,38 +56,41 @@ stderr_logfile_maxbytes=0
 ```
 
 - `-r /app`：将根目录设为 `/app`，仅管理该目录下的文件。
-- `-p 8080 -a 0.0.0.0`：监听 8080 端口并绑定到所有网卡，供外部访问。
-- `--database /tmp/filebrowser.db`：数据库文件位于 `/tmp/filebrowser.db`（默认不做持久化）。
+- `-p 8080 -a 0.0.0.0`：监听 8080 端口并绑定到所有网卡，供外部访问。  
+- `--database /tmp/filebrowser.db`：数据库文件位于 `/tmp/filebrowser.db`，存放在容器临时目录中（默认不持久化）。
 - `autostart=true` / `autorestart=true`：随容器启动并在异常退出时自动重启。  
 - `user=application`：以非 root 用户运行，与基础镜像保持一致。
 - 日志重定向到 `/dev/stdout` 和 `/dev/stderr`，便于通过 `docker logs` 查看。
 
 ## 管理员账号与日志
 
-在使用一个全新的数据库路径首次启动时，FileBrowser 会初始化数据库并创建管理员账号 `admin`，密码为随机生成的强密码。
+使用一个全新的数据库路径首次启动时，FileBrowser 会初始化数据库并创建管理员账号 `admin`，密码为随机生成的强密码。
 
 - 初始化时日志会输出一条类似信息：  
   ```text
   2025/12/29 00:13:22 User 'admin' initialized with randomly generated password: qxyS3DSTb3Gf1ikX
   ```
 - 可以通过如下命令从容器日志中获取密码：  
+
   ```bash
   docker logs php-nginx-filebrowser | grep -i "initialized with randomly generated password"
   ```
-- 拿到密码后使用 `admin` + 该密码登录 Web 界面，并在登录后尽快修改密码。
 
-如果更换了数据库路径（见下一节），请对应调整命令中的 `--database` 路径。
+- 只要数据库所在路径不持久化（例如使用默认的 `/tmp/filebrowser.db`），容器重启或镜像重建后，之前的 FileBrowser 配置和账号信息都会丢失，但挂载目录中的实际文件不会受影响。
 
-## 数据持久化示例
+## FileBrowser 配置数据持久化
 
 默认数据库路径位于 `/tmp/filebrowser.db`，容器重启后内容会丢失。
 如需持久化账号和配置，可以改用持久化目录：
 
-1. 修改 supervisord 配置中的命令，例如：
+1. 修改 `supervisord-filebrowser.conf` 中的命令，例如：
+
    ```ini
    command=/usr/local/bin/filebrowser -r /app -p 8080 -a 0.0.0.0 --database /srv/filebrowser/filebrowser.db
    ```
+
 2. 启动容器时挂载数据卷：
+
    ```bash
    docker run -d \
      --name php-nginx-filebrowser \
@@ -96,9 +99,32 @@ stderr_logfile_maxbytes=0
      -v /path/to/db:/srv/filebrowser \
      php-nginx-filebrowser
    ```
+
 这样数据库会保存到宿主机 `/path/to/db/filebrowser.db` 中，重建容器也不会丢失 FileBrowser 的用户和配置。
 
-## 参考
+## PHP / Nginx 相关参数
+
+本镜像只扩展了 FileBrowser，其余 PHP 与 Nginx 行为与 `webdevops/php-nginx` 保持一致，可通过环境变量进行配置。
+
+- **WEB_DOCUMENT_ROOT**  
+  - 指定 Nginx/PHP 的 Web 根目录，默认值为 `/app`。
+  - 本镜像中 FileBrowser 也使用 `/app` 作为根目录（`-r /app`），默认情况下两者一致。  
+  - 如需将 PHP 应用放在子目录（例如 `/app/public`），可以在启动容器时设置：  
+    ```bash
+    -e WEB_DOCUMENT_ROOT=/app/public
+    ```
+
+- **WEB_DOCUMENT_INDEX**  
+  - 指定 Nginx 的默认首页文件名，默认值为 `index.php`。
+  - 对 `/` 的访问会被重写到该文件，例如 `/index.php`。  
+  - 如果 PHP 应用首页不叫 `index.php`，可以设置：  
+    ```bash
+    -e WEB_DOCUMENT_INDEX=public/index.php
+    ```
+
+如果需要进一步修改 PHP、Nginx 的配置（如上传大小、额外 vhost、PHP-FPM 参数等），请参考 `webdevops/php-nginx` 官方文档中的环境变量和配置挂载说明，不建议在本镜像中直接修改基础文件。
+
+## 其余参考
 
 - `webdevops/php-nginx` 文档：  
   https://dockerfile.readthedocs.io/en/latest/content/DockerImages/dockerfiles/php-nginx.html
