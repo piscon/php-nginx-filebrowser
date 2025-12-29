@@ -28,4 +28,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: yourname/php-nginx-filebrowser:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/php-nginx-filebrowser:latest
